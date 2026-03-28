@@ -6,13 +6,13 @@ import { TransactionFormData, transactionSchema, defaultValues } from "./schema"
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 
-export type FormModalProps = {
-   title: string;
-   closeModal: () => void;
-   addTransaction: (transaction: ITransaction) => void;
+type FormModalProps = {
+  closeModal: () => void;
+  title: string;
+  addTransaction: (transaction: ITransaction) => void;
+  initialData?: ITransaction; // 👈 ADICIONA ISSO
 }
-
-export const FormModal = ({ title, closeModal, addTransaction }: FormModalProps) => {
+export const FormModal = ({ title, closeModal, addTransaction, initialData }: FormModalProps) => {
   
   const {
     handleSubmit,
@@ -22,7 +22,7 @@ export const FormModal = ({ title, closeModal, addTransaction }: FormModalProps)
     watch
   } = useForm<TransactionFormData>({
     resolver: yupResolver(transactionSchema),
-    defaultValues
+    defaultValues: initialData as any|| defaultValues
   })  
   const handleTypeChange = (type: TransactionType) => {
     setValue("type", type);

@@ -9,6 +9,7 @@ import { useMemo, useState } from "react";
 
 const transactions:ITransaction[] = [
   {
+    
     id: "1",
     title: "Salário",
     price: 5000,
@@ -45,10 +46,18 @@ const transactions:ITransaction[] = [
 export default function Home() {
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [transactionData, setTransactionData] = useState(transactions);
+  const [editingTransaction, setEditingTransaction] = useState<ITransaction | null>(null);
+
+  
+  function deleteTransaction(id: string) {
+    setTransactionData(prev =>
+      prev.filter(t => t.id !== id)
+    );
+  }
 
   const handleAddTransaction = (transaction: ITransaction) => {
-    setTransactionData( (prevState)=> [...prevState, transaction]);
-  }
+    setTransactionData(prev => [...prev, transaction]);
+  };
 
   const calculaTotal = useMemo(() => {
     const totals = transactionData.reduce<TotalCard>((acc, transaction) => {
@@ -60,22 +69,48 @@ export default function Home() {
         acc.total -= transaction.price;
       }
       return acc;
-    }, { total: 0, income: 0, outcome: 0 })
+    }, { total: 0, income: 0, outcome: 0 });
 
     return totals;
   }, [transactionData]);
-  
+
   return (
     <div className="h-full min-h-screen">
-      <Header handleOpenFormModal={() => setIsFormModalOpen(true)}/>
+      <Header handleOpenFormModal={() => setIsFormModalOpen(true)} />
+
       <BodyContainer>
-         <CardContainer totalValues={calculaTotal} />
-         <Table data={transactionData} />
+        <CardContainer totalValues={calculaTotal} />
+
+        <Table 
+          data={transactionData} 
+          onDelete={deleteTransaction}
+          onEdit={setEditingTransaction}
+        />
       </BodyContainer>
-      {isFormModalOpen && <FormModal 
+
+      {isFormModalOpen && (
+        <FormModal 
           closeModal={() => setIsFormModalOpen(false)} 
           title="Criar Transação" 
-          addTransaction={handleAddTransaction} />}
+          addTransaction={handleAddTransaction} 
+        />
+      )}
+
+     {editingTransaction && (
+  <FormModal 
+    closeModal={() => setEditingTransaction(null)} 
+    title="Editar Transação"
+    addTransaction={(updated) => {
+      setTransactionData(prev =>
+        prev.map(t =>
+          t.id === updated.id ? updated : t
+        )
+      );
+      setEditingTransaction(null);
+    }}
+    initialData={editingTransaction} // 👈 AQUI
+  />
+)}
     </div>
   );
 }
